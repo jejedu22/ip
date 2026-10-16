@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+
+{% block hero %}
+<section class="hero">
+    <div class="container hero__inner">
+        <div>
+            <p class="hero__eyebrow">À l’usage des professionnels</p>
+            <h1>Fiche de transmission d’une information préoccupante</h1>
+            <p class="hero__lead">Direction Enfance et Famille – Cellule de Recueil des Informations Préoccupantes 22</p>
+        </div>
+        <aside class="hero__card" aria-label="Coordonnées de la CRIP">
+            <p class="hero__card-title">Document à transmettre à</p>
+            <p>Cellule de Recueil des Informations Préoccupantes 22<br>
+                9 Place du Général de Gaulle – CS 42371<br>
+                22023 Saint-Brieuc Cedex 01</p>
+            <p>Tél. : <a href="tel:+33296773236">02 96 77 32 36</a></p>
+        </aside>
+    </div>
+</section>
+{% endblock %}
+
+{% block body %}
+{{ form_start(form, {attr: {novalidate: 'novalidate', class: 'ip-form', autocomplete: 'off'}}) }}
+
+    <p class="note">Les champs marqués d’un <span class="req" aria-hidden="true">*</span> sont obligatoires. <strong>Aucune des informations saisies n’est enregistrée</strong> : la fiche est directement envoyée par e-mail à la CRIP. Seuls le nom et l’adresse de l’expéditeur ainsi que la date d’envoi sont conservés pour le suivi.</p>
+
+    {% if form.vars.errors|length > 0 or (form.vars.submitted and not form.vars.valid) %}
+        <div class="alert alert--error" role="alert">Le formulaire contient des erreurs. Merci de les corriger avant de l’envoyer.</div>
+    {% endif %}
+    {{ form_errors(form) }}
+
+    {# 1 #}
+    <fieldset class="card">
+        <legend><span class="num">1</span> Recueil des premiers éléments</legend>
+        <div class="grid grid--2">
+            {{ form_row(form.recueil.date) }}
+            {{ form_row(form.recueil.heure) }}
+        </div>
+        {{ form_row(form.recueil.mode) }}
+    </fieldset>
+
+    {# 2 #}
+    <fieldset class="card">
+        <legend><span class="num">2</span> Identification du service / partenaire qui transmet les éléments à la CRIP</legend>
+        <div class="grid grid--2">
+            {{ form_row(form.service.nom) }}
+            {{ form_row(form.service.prenom) }}
+        </div>
+        {{ form_row(form.service.fonction) }}
+        {{ form_row(form.service.organisme) }}
+        <div class="grid grid--2">
+            {{ form_row(form.service.fixe) }}
+            {{ form_row(form.service.mobile) }}
+        </div>
+        {{ form_row(form.service.courriel) }}
+    </fieldset>
+
+    {# 3 #}
+    <fieldset class="card">
+        <legend><span class="num">3</span> Identification de la personne ayant communiqué les éléments (informateur)</legend>
+        <p class="help">Si l’anonymat est sollicité, <strong>ne pas remplir</strong> l’identification de la personne.</p>
+        {{ form_row(form.informateur.anonyme, {attr: {'data-anonymat': ''}}) }}
+        <div data-identite>
+            <div class="grid grid--2">
+                {{ form_row(form.informateur.nom) }}
+                {{ form_row(form.informateur.prenom) }}
+            </div>
+            {{ form_row(form.informateur.organisme) }}
+            {{ form_row(form.informateur.adresse) }}
+            <div class="grid grid--2">
+                {{ form_row(form.informateur.fixe) }}
+                {{ form_row(form.informateur.mobile) }}
+            </div>
+            {{ form_row(form.informateur.courriel) }}
+        </div>
+        {{ form_row(form.informateur.qualite) }}
+        {{ form_row(form.informateur.qualite_autre) }}
+    </fieldset>
+
+    {# 4 #}
+    <fieldset class="card">
+        <legend><span class="num">4</span> Identification du ou des mineurs concernés</legend>
+        {{ form_errors(form.mineurs) }}
+        <div data-collection data-prototype="{{ form_widget(form.mineurs.vars.prototype)|e('html_attr') }}" data-index="{{ form.mineurs|length }}" data-min="1">
+            {% for mineur in form.mineurs %}{{ form_widget(mineur) }}{% endfor %}
+        </div>
+        <button type="button" class="btn btn--secondary" data-add="mineurs">+ Ajouter un mineur</button>
+
+        <div class="spacer"></div>
+        {{ form_row(form.adresse_mineurs) }}
+        <div class="grid grid--2">
+            {{ form_row(form.code_postal) }}
+            {{ form_row(form.commune) }}
+        </div>
+
+        <h3>Autres enfants présents au domicile</h3>
+        {{ form_errors(form.autres_enfants) }}
+        <div data-collection data-prototype="{{ form_widget(form.autres_enfants.vars.prototype)|e('html_attr') }}" data-index="{{ form.autres_enfants|length }}" data-min="0">
+            {% for enfant in form.autres_enfants %}{{ form_widget(enfant) }}{% endfor %}
+        </div>
+        <button type="button" class="btn btn--secondary" data-add="autres_enfants">+ Ajouter un enfant</button>
+    </fieldset>
+
+    {# 5 #}
+    <fieldset class="card">
+        <legend><span class="num">5</span> Identification des parents ou des responsables légaux du ou des mineurs concernés</legend>
+        <h3>Parent 1</h3>
+        {{ form_widget(form.parents.parent1) }}
+        <h3>Parent 2</h3>
+        {{ form_widget(form.parents.parent2) }}
+        <h3>Autre</h3>
+        {{ form_widget(form.parents.autre) }}
+
+        <div class="spacer"></div>
+        {{ form_row(form.autorite) }}
+        {{ form_row(form.autorite_precision) }}
+        {{ form_row(form.residence) }}
+        {{ form_row(form.residence_autre) }}
+        {{ form_row(form.suivi_social) }}
+        {{ form_row(form.suivi_social_coordonnees) }}
+        {{ form_row(form.suivi_educatif) }}
+        {{ form_row(form.suivi_educatif_coordonnees) }}
+    </fieldset>
+
+    {# 6 #}
+    <fieldset class="card">
+        <legend><span class="num">6</span> Les éléments préoccupants</legend>
+        {{ form_row(form.elements, {attr: {rows: 12}}) }}
+    </fieldset>
+
+    {# 7 #}
+    <fieldset class="card">
+        <legend><span class="num">7</span> Information aux parents</legend>
+        <p class="legal">Conformément à l’article L. 226-2-1 du Code de l’action sociale et des familles, les personnes qui mettent en œuvre la politique de protection de l’enfance, ainsi que celles qui lui apportent leur concours (partenaires institutionnels, autorité judiciaire, services publics, établissements éducatifs publics et privés…) ont l’obligation, sauf intérêt contraire de l’enfant, d’informer préalablement, selon des modalités adaptées, le père, la mère, toute autre personne exerçant l’autorité parentale ou le tuteur de la transmission d’une information préoccupante.</p>
+        {{ form_row(form.parents_informes) }}
+        <div data-if="Oui">{{ form_row(form.parents_informes_qui) }}</div>
+        <div data-if="Non">{{ form_row(form.parents_informes_non) }}</div>
+    </fieldset>
+
+    {# 8 #}
+    <fieldset class="card">
+        <legend><span class="num">8</span> Éléments complémentaires à rapporter sur la situation et éléments antérieurs</legend>
+        {{ form_row(form.complements, {label_attr: {class: 'sr-only'}, attr: {rows: 8}}) }}
+        {{ form_row(form.pieces_jointes, {attr: {accept: '.pdf,.jpg,.jpeg,.png'}, help: '5 fichiers maximum, 5 Mo chacun (PDF, JPG ou PNG). Les fichiers sont joints au message et ne sont pas conservés.'}) }}
+    </fieldset>
+
+    <div class="hp" aria-hidden="true">{{ form_row(form.website, {attr: {tabindex: -1, autocomplete: 'off'}}) }}</div>
+    {{ form_rest(form) }}
+
+    <p class="legal">La présente fiche doit permettre à la Cellule de Recueil des Informations Préoccupantes de qualifier ou non les éléments transmis en information préoccupante au sens de l’article R. 226-2-2 du Code de l’action sociale et des familles. Les informations recueillies dans cette fiche sont couvertes par le secret professionnel ; la demande d’anonymat concerne les non-professionnels et peut être levée sur réquisitions judiciaires.</p>
+
+    <div class="actions">
+        <button type="submit" class="btn btn--primary">Envoyer la fiche à la CRIP</button>
+        <a class="btn btn--link" href="{{ path('transmission') }}" data-reset>Effacer la saisie</a>
+    </div>
+{{ form_end(form, {render_rest: false}) }}
+{% endblock %}
+
+{% block javascripts %}<script src="{{ asset('assets/js/form.js') }}" defer></script>{% endblock %}

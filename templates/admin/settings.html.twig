@@ -1,0 +1,13 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block admin_title %}Paramètres{% endblock %}
+
+{% block body %}
+<section class="card card--narrow">
+    <h1>Paramètres</h1>
+    {{ form_start(form, {attr: {class: 'ip-form', novalidate: 'novalidate'}}) }}
+        {{ form_row(form.recipient) }}
+        <div class="actions"><button type="submit" class="btn btn--primary">Enregistrer</button></div>
+    {{ form_end(form) }}
+</section>
+{% endblock %}

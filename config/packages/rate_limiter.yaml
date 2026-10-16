@@ -1,0 +1,7 @@
+framework:
+    rate_limiter:
+        # Limite l'envoi du formulaire public : 5 envois / 10 minutes / adresse IP
+        transmission:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '10 minutes'

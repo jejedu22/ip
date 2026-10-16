@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fiche envoyée{% endblock %}
+
+{% block body %}
+<section class="card card--center">
+    <div class="check" aria-hidden="true">✓</div>
+    <h1>Votre fiche a bien été envoyée</h1>
+    <p>La fiche de transmission a été adressée à la Cellule de Recueil des Informations Préoccupantes.</p>
+    <p class="help">Conformément au fonctionnement de ce service, le contenu de la fiche n’a pas été conservé. Pensez à en garder une copie dans votre dossier professionnel si nécessaire.</p>
+    <p><a class="btn btn--primary" href="{{ path('transmission') }}">Remplir une nouvelle fiche</a></p>
+</section>
+{% endblock %}

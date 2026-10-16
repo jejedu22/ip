@@ -1,0 +1,39 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block admin_title %}Historique des envois{% endblock %}
+
+{% block body %}
+<h1>Historique des envois</h1>
+
+<div class="stats">
+    <div class="stat"><span class="stat__value">{{ total }}</span><span class="stat__label">fiche{{ total > 1 ? 's' : '' }} envoyée{{ total > 1 ? 's' : '' }}</span></div>
+    <div class="stat stat--wide"><span class="stat__label">Destinataire actuel</span><span class="stat__value stat__value--small">{{ recipient }}</span><a href="{{ path('admin_settings') }}">Modifier</a></div>
+</div>
+
+<p class="help">Seuls l’expéditeur et la date d’envoi sont enregistrés. Le contenu des fiches n’est jamais conservé.</p>
+
+<div class="table-wrap">
+<table class="table">
+    <thead><tr><th scope="col">Date d’envoi</th><th scope="col">Expéditeur</th><th scope="col">Adresse e-mail</th></tr></thead>
+    <tbody>
+    {% for log in logs %}
+        <tr>
+            <td>{{ log.sentAt|date('d/m/Y à H:i', 'Europe/Paris') }}</td>
+            <td>{{ log.senderName }}</td>
+            <td>{{ log.senderEmail }}</td>
+        </tr>
+    {% else %}
+        <tr><td colspan="3" class="table__empty">Aucun envoi pour le moment.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+{% if pages > 1 %}
+<nav class="pagination" aria-label="Pagination">
+    {% if page > 1 %}<a class="btn btn--secondary" href="{{ path('admin_dashboard', {page: page - 1}) }}">Précédent</a>{% endif %}
+    <span>Page {{ page }} / {{ pages }}</span>
+    {% if page < pages %}<a class="btn btn--secondary" href="{{ path('admin_dashboard', {page: page + 1}) }}">Suivant</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

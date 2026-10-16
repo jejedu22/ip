@@ -1,0 +1,26 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block admin_title %}Connexion{% endblock %}
+
+{% block body %}
+<section class="card card--narrow">
+    <h1>Espace d’administration</h1>
+    {% if error %}
+        <div class="alert alert--error" role="alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+    {% endif %}
+    <form method="post" class="ip-form" action="{{ path('admin_login') }}">
+        <div class="field">
+            <label for="username" class="required">Adresse e-mail</label>
+            <input type="email" id="username" name="_username" value="{{ last_username }}" autocomplete="username" required autofocus>
+        </div>
+        <div class="field">
+            <label for="password" class="required">Mot de passe</label>
+            <input type="password" id="password" name="_password" autocomplete="current-password" required>
+        </div>
+        <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+        <div class="actions">
+            <button type="submit" class="btn btn--primary">Se connecter</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% import 'email/_macros.html.twig' as m -%}
+{% macro line(label, v) %}{% if v is not empty %}{{ label }} : {{ v is iterable ? v|join(', ') : (v.timestamp is defined ? v|date('d/m/Y') : v) }}
+{% endif %}{% endmacro -%}
+{% import _self as t -%}
+FICHE DE TRANSMISSION D'UNE INFORMATION PRÉOCCUPANTE
+Reçue le {{ 'now'|date('d/m/Y à H:i', 'Europe/Paris') }} - Document confidentiel (secret professionnel)
+
+1 - RECUEIL DES PREMIERS ÉLÉMENTS
+{{ t.line('Date de recueil', d.recueil.date) }}{{ t.line('Heure', d.recueil.heure ? d.recueil.heure|date('H:i') : null) }}{{ t.line('Mode de recueil', d.recueil.mode) }}
+2 - SERVICE / PARTENAIRE QUI TRANSMET
+{{ t.line('Nom', d.service.nom) }}{{ t.line('Prénom', d.service.prenom) }}{{ t.line('Fonction', d.service.fonction) }}{{ t.line('Organisme / Service / Adresse', d.service.organisme) }}{{ t.line('Téléphone fixe', d.service.fixe) }}{{ t.line('Téléphone mobile', d.service.mobile) }}{{ t.line('Courriel', d.service.courriel) }}
+3 - INFORMATEUR
+{% if d.informateur.anonyme %}L'anonymat est sollicité
+{% endif %}{{ t.line('Nom', d.informateur.nom ?? null) }}{{ t.line('Prénom', d.informateur.prenom ?? null) }}{{ t.line('Organisme ou service', d.informateur.organisme ?? null) }}{{ t.line('Adresse professionnelle', d.informateur.adresse ?? null) }}{{ t.line('Téléphone fixe', d.informateur.fixe ?? null) }}{{ t.line('Téléphone mobile', d.informateur.mobile ?? null) }}{{ t.line('Courriel', d.informateur.courriel ?? null) }}{{ t.line('Qualité', d.informateur.qualite ?? null) }}{{ t.line('Précision', d.informateur.qualite_autre ?? null) }}
+4 - MINEUR(S) CONCERNÉ(S)
+{% for e in d.mineurs %}[Mineur {{ loop.index }}]
+{{ t.line('Nom', e.nom) }}{{ t.line('Prénom', e.prenom) }}{{ t.line('Date de naissance', e.naissance) }}{{ t.line('Lieu de naissance', e.lieu) }}{{ t.line('Sexe', e.sexe) }}{% endfor %}
+{{ t.line('Adresse', d.adresse_mineurs) }}{{ t.line('Code postal', d.code_postal) }}{{ t.line('Commune', d.commune) }}
+{% if d.autres_enfants %}Autres enfants présents au domicile :
+{% for e in d.autres_enfants %}[Enfant {{ loop.index }}]
+{{ t.line('Nom', e.nom) }}{{ t.line('Prénom', e.prenom) }}{{ t.line('Date de naissance', e.naissance) }}{{ t.line('Lieu de naissance', e.lieu) }}{{ t.line('Sexe', e.sexe) }}{{ t.line('Adresse (si différente)', e.adresse) }}{% endfor %}{% endif %}
+5 - PARENTS OU RESPONSABLES LÉGAUX
+{% for key, label in {parent1: 'Parent 1', parent2: 'Parent 2', autre: 'Autre'} %}{% set p = d.parents[key] %}{% if p.nom or p.prenom or p.naissance or p.adresse or p.telephone %}[{{ label }}]
+{{ t.line('Nom', p.nom) }}{{ t.line('Prénom', p.prenom) }}{{ t.line('Date et lieu de naissance', p.naissance) }}{{ t.line('Adresse (si différente)', p.adresse) }}{{ t.line('Téléphone', p.telephone) }}{% endif %}{% endfor %}
+{{ t.line('Autorité parentale', d.autorite) }}{{ t.line('Précision autorité parentale', d.autorite_precision) }}{{ t.line('Résidence de l\'enfant', d.residence) }}{{ t.line('Précision résidence', d.residence_autre) }}{{ t.line('Suivi social', d.suivi_social) }}{{ t.line('Coordonnées du suivi social', d.suivi_social_coordonnees) }}{{ t.line('Suivi éducatif', d.suivi_educatif) }}{{ t.line('Coordonnées du suivi éducatif', d.suivi_educatif_coordonnees) }}
+6 - LES ÉLÉMENTS PRÉOCCUPANTS
+{{ d.elements }}
+
+7 - INFORMATION AUX PARENTS
+{{ t.line('Parents informés', d.parents_informes) }}{{ t.line('Qui', d.parents_informes_qui) }}{{ t.line('Pourquoi non', d.parents_informes_non) }}
+8 - ÉLÉMENTS COMPLÉMENTAIRES ET ÉLÉMENTS ANTÉRIEURS
+{{ d.complements ?: '—' }}
