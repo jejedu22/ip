@@ -35,6 +35,13 @@ Variables d'environnement importantes :
 En production : `APP_ENV=prod`, HTTPS obligatoire, `composer install --no-dev -o`, et ne pas installer d'outil qui journalise
 le contenu des requêtes (profiler, logs de corps de requête…).
 
+## Pièce jointe PDF
+
+Chaque e-mail contient en pièce jointe la fiche au format PDF (`fiche-transmission-ip-AAAAMMJJ-HHMMSS.pdf`), qui reprend la
+structure du formulaire papier de la CRIP (rubriques 1 à 8, cases à cocher, tableaux, encarts « N. B. »). Le PDF est généré en
+mémoire par `App\Service\TransmissionPdf` (dompdf, gabarit `templates/pdf/fiche.html.twig`) et n'est jamais écrit sur le disque ;
+le nom du fichier ne contient aucune donnée nominative. Les pièces jointes téléversées sont ajoutées après la fiche.
+
 ## Docker (derrière Traefik)
 
 L'image (`Dockerfile`) repose sur FrankenPHP (Caddy + PHP 8.3) : elle sert l'application en **HTTP sur le port 8080**, sous un
