@@ -35,6 +35,25 @@ Variables d'environnement importantes :
 En production : `APP_ENV=prod`, HTTPS obligatoire, `composer install --no-dev -o`, et ne pas installer d'outil qui journalise
 le contenu des requêtes (profiler, logs de corps de requête…).
 
+## Docker (derrière Traefik)
+
+L'image (`Dockerfile`) repose sur FrankenPHP (Caddy + PHP 8.3) : elle sert l'application en **HTTP sur le port 8080**, sous un
+utilisateur non-root, sans capabilities. Le **TLS est terminé par Traefik**, qui doit être déjà en place avec un réseau Docker
+partagé (par défaut `traefik`), les entrypoints `web` / `websecure` et un certresolver (par défaut `letsencrypt`).
+
+```bash
+cp .env.docker.example .env.docker      # renseigner APP_HOST, APP_SECRET, MAILER_DSN, MAIL_FROM, DEFAULT_RECIPIENT
+docker compose --env-file .env.docker up -d --build
+docker compose --env-file .env.docker exec app php bin/console app:create-admin prenom.nom@exemple.fr
+```
+
+* Les routeurs Traefik (HTTPS + redirection HTTP → HTTPS) sont déclarés par les labels de `compose.yaml`.
+* Les migrations sont appliquées automatiquement au démarrage du conteneur.
+* La base SQLite est dans le volume `crip-data` (`/var/lib/crip`) : c'est la seule donnée persistante (expéditeur + date d'envoi).
+* `TRUSTED_PROXIES` (défaut `private_ranges`) permet à Symfony de lire l'IP cliente et le schéma HTTPS transmis par Traefik
+  (limitation de débit par IP, cookies `Secure`, URLs générées en HTTPS).
+* Les envois passent par `MAILER_DSN` : le conteneur doit pouvoir joindre votre serveur SMTP.
+
 ## Tests
 
 ```bash
