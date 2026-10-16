@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}Fiche de transmission d’une information préoccupante{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
+</head>
+<body>
+<a class="skip-link" href="#contenu">Aller au contenu</a>
+
+<header class="site-header">
+    <div class="container site-header__inner">
+        <a class="site-header__logo" href="{{ path('transmission') }}" aria-label="Accueil">
+            <img src="{{ asset('assets/img/logo.svg') }}" alt="Côtes d’Armor – le Département" height="52">
+        </a>
+        {% block header_nav %}{% endblock %}
+    </div>
+</header>
+
+{% block hero %}{% endblock %}
+
+<main id="contenu" class="container main">
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert--{{ type }}" role="{{ type == 'error' ? 'alert' : 'status' }}">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+    {% block body %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <p>Direction Enfance et Famille – Cellule de Recueil des Informations Préoccupantes.</p>
+        <p class="site-footer__small">Les informations recueillies sont couvertes par le secret professionnel. Elles sont transmises par e-mail et ne sont pas conservées par cette application.</p>
+    </div>
+</footer>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

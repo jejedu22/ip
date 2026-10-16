@@ -1,0 +1,112 @@
+{% import 'email/_macros.html.twig' as m %}
+<!DOCTYPE html>
+<html lang="fr">
+<body style="margin:0;padding:0;background:#f8f4ef;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#333;">
+<div style="max-width:760px;margin:0 auto;padding:24px;background:#fff;">
+    <h1 style="margin:0 0 4px;font-size:20px;color:#2c1266;">Fiche de transmission d’une information préoccupante</h1>
+    <p style="margin:0 0 16px;color:#5e5e5e;">À l’usage des professionnels – reçue le {{ 'now'|date('d/m/Y à H:i', 'Europe/Paris') }}</p>
+    <p style="margin:0;padding:8px 12px;background:#d7e3ff;">Document confidentiel couvert par le secret professionnel. Répondre à ce message écrit à l’expéditeur de la fiche.</p>
+
+    {{ m.title(1, 'Recueil des premiers éléments') }}
+    <table width="100%" cellspacing="0" cellpadding="0">
+        {{ m.row('Date de recueil', d.recueil.date) }}
+        {{ m.row('Heure', d.recueil.heure ? d.recueil.heure|date('H:i') : null) }}
+        {{ m.row('Mode de recueil', d.recueil.mode) }}
+    </table>
+
+    {{ m.title(2, 'Service / partenaire qui transmet les éléments') }}
+    <table width="100%" cellspacing="0" cellpadding="0">
+        {{ m.row('Nom', d.service.nom) }}
+        {{ m.row('Prénom', d.service.prenom) }}
+        {{ m.row('Fonction', d.service.fonction) }}
+        {{ m.row('Organisme / Service / Adresse', d.service.organisme) }}
+        {{ m.row('Téléphone fixe', d.service.fixe) }}
+        {{ m.row('Téléphone mobile', d.service.mobile) }}
+        {{ m.row('Courriel', d.service.courriel) }}
+    </table>
+
+    {{ m.title(3, 'Informateur') }}
+    <table width="100%" cellspacing="0" cellpadding="0">
+        {% if d.informateur.anonyme %}
+            {{ m.row('Anonymat', 'L’anonymat est sollicité') }}
+        {% endif %}
+        {{ m.row('Nom', d.informateur.nom ?? null) }}
+        {{ m.row('Prénom', d.informateur.prenom ?? null) }}
+        {{ m.row('Organisme ou service', d.informateur.organisme ?? null) }}
+        {{ m.row('Adresse professionnelle', d.informateur.adresse ?? null) }}
+        {{ m.row('Téléphone fixe', d.informateur.fixe ?? null) }}
+        {{ m.row('Téléphone mobile', d.informateur.mobile ?? null) }}
+        {{ m.row('Courriel', d.informateur.courriel ?? null) }}
+        {{ m.row('Qualité', d.informateur.qualite ?? null) }}
+        {{ m.row('Précision', d.informateur.qualite_autre ?? null) }}
+    </table>
+
+    {{ m.title(4, 'Mineur(s) concerné(s)') }}
+    {% for e in d.mineurs %}
+    <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:10px;border-left:3px solid #0270D3;padding-left:8px;">
+        {{ m.row('Nom', e.nom) }}
+        {{ m.row('Prénom', e.prenom) }}
+        {{ m.row('Date de naissance', e.naissance) }}
+        {{ m.row('Lieu de naissance', e.lieu) }}
+        {{ m.row('Sexe', e.sexe) }}
+    </table>
+    {% endfor %}
+    <table width="100%" cellspacing="0" cellpadding="0">
+        {{ m.row('Adresse', d.adresse_mineurs) }}
+        {{ m.row('Code postal', d.code_postal) }}
+        {{ m.row('Commune', d.commune) }}
+    </table>
+    {% if d.autres_enfants %}
+    <h3 style="margin:16px 0 6px;color:#2c1266;">Autres enfants présents au domicile</h3>
+    {% for e in d.autres_enfants %}
+    <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:10px;border-left:3px solid #028317;padding-left:8px;">
+        {{ m.row('Nom', e.nom) }}
+        {{ m.row('Prénom', e.prenom) }}
+        {{ m.row('Date de naissance', e.naissance) }}
+        {{ m.row('Lieu de naissance', e.lieu) }}
+        {{ m.row('Sexe', e.sexe) }}
+        {{ m.row('Adresse (si différente)', e.adresse) }}
+    </table>
+    {% endfor %}
+    {% endif %}
+
+    {{ m.title(5, 'Parents ou responsables légaux') }}
+    {% for key, label in {parent1: 'Parent 1', parent2: 'Parent 2', autre: 'Autre'} %}
+        {% set p = d.parents[key] %}
+        {% if p.nom or p.prenom or p.naissance or p.adresse or p.telephone %}
+        <h3 style="margin:12px 0 4px;color:#2c1266;">{{ label }}</h3>
+        <table width="100%" cellspacing="0" cellpadding="0">
+            {{ m.row('Nom', p.nom) }}
+            {{ m.row('Prénom', p.prenom) }}
+            {{ m.row('Date et lieu de naissance', p.naissance) }}
+            {{ m.row('Adresse (si différente)', p.adresse) }}
+            {{ m.row('Téléphone', p.telephone) }}
+        </table>
+        {% endif %}
+    {% endfor %}
+    <table width="100%" cellspacing="0" cellpadding="0" style="margin-top:12px;">
+        {{ m.row('Autorité parentale', d.autorite) }}
+        {{ m.row('Précision autorité parentale', d.autorite_precision) }}
+        {{ m.row('Résidence de l’enfant', d.residence) }}
+        {{ m.row('Précision résidence', d.residence_autre) }}
+        {{ m.row('Suivi social', d.suivi_social) }}
+        {{ m.row('Coordonnées du suivi social', d.suivi_social_coordonnees) }}
+        {{ m.row('Suivi éducatif', d.suivi_educatif) }}
+        {{ m.row('Coordonnées du suivi éducatif', d.suivi_educatif_coordonnees) }}
+    </table>
+
+    {{ m.title(6, 'Les éléments préoccupants') }}
+    <p style="margin:0;">{{ d.elements|nl2br }}</p>
+
+    {{ m.title(7, 'Information aux parents') }}
+    <table width="100%" cellspacing="0" cellpadding="0">
+        {{ m.row('Parents / responsables légaux informés de la transmission ?', d.parents_informes) }}
+        {{ m.row('Qui', d.parents_informes_qui) }}
+        {{ m.row('Pourquoi non', d.parents_informes_non) }}
+    </table>
+
+    {{ m.title(8, 'Éléments complémentaires et éléments antérieurs') }}
+    <p style="margin:0;">{{ d.complements ? d.complements|nl2br : '—' }}</p>
+</div>
+</body>
+</html>

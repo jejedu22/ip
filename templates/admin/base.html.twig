@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration – {% block admin_title %}{% endblock %}{% endblock %}
+
+{% block header_nav %}
+    {% if is_granted('ROLE_ADMIN') %}
+    <nav class="admin-nav" aria-label="Administration">
+        {% set route = app.request.attributes.get('_route') %}
+        <a href="{{ path('admin_dashboard') }}" {% if route == 'admin_dashboard' %}aria-current="page"{% endif %}>Historique</a>
+        <a href="{{ path('admin_settings') }}" {% if route == 'admin_settings' %}aria-current="page"{% endif %}>Paramètres</a>
+        <a href="{{ path('admin_password') }}" {% if route == 'admin_password' %}aria-current="page"{% endif %}>Mot de passe</a>
+        <a href="{{ path('admin_logout') }}" class="admin-nav__logout">Se déconnecter</a>
+    </nav>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,19 @@
+{% macro val(v) -%}
+    {%- if v is iterable -%}{{ v|join(', ') }}
+    {%- elseif v is same as(true) -%}Oui
+    {%- elseif v.timestamp is defined -%}{{ v|date('d/m/Y') }}
+    {%- else -%}{{ v }}{%- endif -%}
+{%- endmacro %}
+
+{% macro row(label, v) -%}
+    {% if v is not empty %}
+    <tr>
+        <th align="left" valign="top" style="padding:6px 12px 6px 0;color:#5e5e5e;font-weight:normal;width:38%;">{{ label }}</th>
+        <td valign="top" style="padding:6px 0;color:#333;">{{ _self.val(v)|nl2br }}</td>
+    </tr>
+    {% endif %}
+{%- endmacro %}
+
+{% macro title(num, label) -%}
+    <h2 style="margin:28px 0 8px;padding:8px 12px;background:#2c1266;color:#fff;font-size:15px;">{{ num }} – {{ label }}</h2>
+{%- endmacro %}
