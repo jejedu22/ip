@@ -35,6 +35,18 @@ Variables d'environnement importantes :
 En production : `APP_ENV=prod`, HTTPS obligatoire, `composer install --no-dev -o`, et ne pas installer d'outil qui journalise
 le contenu des requêtes (profiler, logs de corps de requête…).
 
+## Captcha (CaptchEtat)
+
+Le formulaire public est protégé par [CaptchEtat](https://api.gouv.fr/les-api/api-captchetat), le captcha de l'État (API PISTE),
+en complément du champ piège, du jeton CSRF et de la limitation de débit. Il est **désactivé tant que `CAPTCHETAT_CLIENT_ID` est vide**.
+
+1. Sur [PISTE](https://piste.gouv.fr), créer une application et souscrire à l'API CaptchEtat (scope `piste.captchetat`).
+2. Renseigner `CAPTCHETAT_CLIENT_ID`, `CAPTCHETAT_CLIENT_SECRET` et `CAPTCHETAT_ENV` (`prod` ou `sandbox`) dans `.env.docker`.
+
+L'image est relayée par l'application (`/captcha/{id}`) : le navigateur ne contacte jamais PISTE et les identifiants restent côté
+serveur. Si PISTE est injoignable, le captcha est ignoré (et l'incident journalisé) pour ne jamais empêcher un signalement ;
+le champ piège et la limitation de débit restent actifs. Le conteneur doit pouvoir joindre `oauth.piste.gouv.fr` et `api.piste.gouv.fr`.
+
 ## Pièce jointe PDF
 
 Chaque e-mail contient en pièce jointe la fiche au format PDF (`fiche-transmission-ip-AAAAMMJJ-HHMMSS.pdf`), qui reprend la

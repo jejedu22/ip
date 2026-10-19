@@ -5,3 +5,9 @@ framework:
             policy: 'sliding_window'
             limit: 5
             interval: '10 minutes'
+
+        # Proxy de l'image captcha : 60 images / 10 minutes / adresse IP
+        captcha_image:
+            policy: 'sliding_window'
+            limit: 60
+            interval: '10 minutes'

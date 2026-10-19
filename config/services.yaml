@@ -21,3 +21,10 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+when@test:
+    services:
+        # Remplaçable dans les tests fonctionnels (client HTTP simulé)
+        App\Service\CaptchEtat:
+            autowire: true
+            public: true
