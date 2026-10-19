@@ -4,11 +4,16 @@ namespace App\Tests\Controller;
 
 use App\Entity\AdminUser;
 use App\Entity\TransmissionLog;
+use App\Service\CaptchEtat;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Psr\Log\NullLogger;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\DomCrawler\Form;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 
 class AppTest extends WebTestCase
 {
@@ -163,5 +168,103 @@ class AppTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $this->client->submit($crawler->selectButton('Se connecter')->form(['_username' => 'x@example.org', '_password' => 'mauvais']));
         $this->assertResponseRedirects('/admin/login');
+    }
+
+    /**
+     * Active CaptchEtat avec un PISTE simulé ; $validation est la réponse de valider-captcha.
+     *
+     * @param list<array{string, string}> $requests Journal des appels (méthode, URL)
+     */
+    private function enableCaptcha(MockResponse|\Closure $validation, array &$requests = []): void
+    {
+        $this->client->disableReboot();
+        $http = new MockHttpClient(function (string $method, string $url) use ($validation, &$requests) {
+            $requests[] = [$method, $url];
+
+            return match (true) {
+                str_contains($url, '/api/oauth/token') => new MockResponse('{"access_token":"tok","expires_in":3600}', ['response_headers' => ['content-type: application/json']]),
+                str_contains($url, 'simple-captcha-endpoint') => new MockResponse('GIF89a', ['response_headers' => ['content-type: image/gif']]),
+                default => $validation instanceof \Closure ? $validation() : $validation,
+            };
+        });
+        static::getContainer()->set(CaptchEtat::class, new CaptchEtat($http, new ArrayAdapter(), new NullLogger(), 'id', 'secret', 'sandbox'));
+    }
+
+    public function testCaptchaIsHiddenWhenDisabled(): void
+    {
+        $this->client->request('GET', '/');
+        $this->assertSelectorNotExists('[data-captcha-img]');
+        $this->client->request('GET', '/captcha/'.str_repeat('a', 32));
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testCaptchaImageIsProxiedAndFormShowsIt(): void
+    {
+        $calls = [];
+        $this->enableCaptcha(new MockResponse('true'), $calls);
+
+        $crawler = $this->client->request('GET', '/');
+        $id = $crawler->filter('[data-captcha-id]')->attr('value');
+        $this->assertMatchesRegularExpression('/^[a-f0-9]{32}$/', $id);
+        $this->assertSame('/captcha/'.$id, $crawler->filter('[data-captcha-img]')->attr('src'));
+
+        $this->client->request('GET', '/captcha/'.$id);
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'image/gif');
+        $this->assertStringContainsString('no-store', (string) $this->client->getResponse()->headers->get('Cache-Control'));
+        $this->assertStringContainsString('t='.$id, implode(' ', array_column($calls, 1)));
+
+        $this->client->request('GET', '/captcha/pas-un-id');
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testWrongCaptchaBlocksSubmissionAndIssuesNewCode(): void
+    {
+        $this->enableCaptcha(new MockResponse('false'));
+        $form = $this->filledForm();
+        $oldId = $form['captcha_id']->getValue();
+        $form['captcha_code'] = 'mauvais';
+        $crawler = $this->client->submit($form);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertEmailCount(0);
+        $this->assertCount(0, $this->em->getRepository(TransmissionLog::class)->findAll());
+        $this->assertSelectorTextContains('ul.errors', 'code de vérification');
+        $this->assertNotSame($oldId, $crawler->filter('[data-captcha-id]')->attr('value'));
+    }
+
+    public function testMissingCaptchaCodeIsRejected(): void
+    {
+        $this->enableCaptcha(new MockResponse('true'));
+        $form = $this->filledForm();
+        $form['captcha_code'] = '';
+        $this->client->submit($form);
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertEmailCount(0);
+    }
+
+    public function testValidCaptchaAllowsSubmission(): void
+    {
+        $calls = [];
+        $this->enableCaptcha(new MockResponse('true'), $calls);
+        $form = $this->filledForm();
+        $form['captcha_code'] = 'ab12';
+        $this->client->submit($form);
+
+        $this->assertResponseRedirects('/merci');
+        $this->assertEmailCount(1);
+        $verification = array_values(array_filter($calls, static fn ($c) => str_contains($c[1], 'valider-captcha')));
+        $this->assertCount(1, $verification);
+        $this->assertSame('POST', $verification[0][0]);
+    }
+
+    public function testCaptchaOutageDoesNotBlockSubmission(): void
+    {
+        $this->enableCaptcha(new MockResponse('', ['http_code' => 503]));
+        $form = $this->filledForm();
+        $form['captcha_code'] = 'ab12';
+        $this->client->submit($form);
+        $this->assertResponseRedirects('/merci');
+        $this->assertEmailCount(1);
     }
 }

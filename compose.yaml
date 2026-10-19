@@ -16,6 +16,9 @@ services:
       DATABASE_URL: sqlite:////var/lib/crip/app.db
       # Traefik arrive depuis le réseau Docker (plages privées)
       TRUSTED_PROXIES: ${TRUSTED_PROXIES:-private_ranges}
+      CAPTCHETAT_CLIENT_ID: ${CAPTCHETAT_CLIENT_ID:-}
+      CAPTCHETAT_CLIENT_SECRET: ${CAPTCHETAT_CLIENT_SECRET:-}
+      CAPTCHETAT_ENV: ${CAPTCHETAT_ENV:-prod}
     volumes:
       - crip-data:/var/lib/crip
     networks:

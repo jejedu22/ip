@@ -131,7 +131,20 @@
     {# 7 #}
     <fieldset class="card">
         <legend><span class="num">7</span> Information aux parents</legend>
-        <p class="legal">Conformément à l’article L. 226-2-1 du Code de l’action sociale et des familles, les personnes qui mettent en œuvre la politique de protection de l’enfance, ainsi que celles qui lui apportent leur concours (partenaires institutionnels, autorité judiciaire, services publics, établissements éducatifs publics et privés…) ont l’obligation, sauf intérêt contraire de l’enfant, d’informer préalablement, selon des modalités adaptées, le père, la mère, toute autre personne exerçant l’autorité parentale ou le tuteur de la transmission d’une information préoccupante.</p>
+        {% if captcha_id %}
+    <fieldset class="card">
+        <legend>Vérification anti-robot</legend>
+        <div class="field{{ form.vars.errors|length ? ' field--error' }}">
+            <label for="captcha_code">Recopiez le code de l’image</label>
+            <img src="{{ path('transmission_captcha', {id: captcha_id}) }}" alt="Image de vérification (code à recopier)" width="250" height="80" data-captcha-img>
+            <button type="button" class="btn btn--link" data-captcha-reload>Afficher un autre code</button>
+            <input type="text" id="captcha_code" name="captcha_code" required autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="20" inputmode="text">
+            <input type="hidden" name="captcha_id" value="{{ captcha_id }}" data-captcha-id>
+        </div>
+    </fieldset>
+    {% endif %}
+
+    <p class="legal">Conformément à l’article L. 226-2-1 du Code de l’action sociale et des familles, les personnes qui mettent en œuvre la politique de protection de l’enfance, ainsi que celles qui lui apportent leur concours (partenaires institutionnels, autorité judiciaire, services publics, établissements éducatifs publics et privés…) ont l’obligation, sauf intérêt contraire de l’enfant, d’informer préalablement, selon des modalités adaptées, le père, la mère, toute autre personne exerçant l’autorité parentale ou le tuteur de la transmission d’une information préoccupante.</p>
         {{ form_row(form.parents_informes) }}
         <div data-if="Oui">{{ form_row(form.parents_informes_qui) }}</div>
         <div data-if="Non">{{ form_row(form.parents_informes_non) }}</div>

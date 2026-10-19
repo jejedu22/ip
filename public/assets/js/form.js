@@ -59,6 +59,17 @@
     }
 
     // Effacer la saisie
+    // Captcha : nouveau code à la demande
+    const cImg = document.querySelector('[data-captcha-img]');
+    const cId = document.querySelector('[data-captcha-id]');
+    document.querySelector('[data-captcha-reload]')?.addEventListener('click', () => {
+        if (!cImg || !cId) return;
+        const id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
+        cId.value = id;
+        cImg.src = cImg.src.replace(/[a-f0-9]{32}$/, id);
+        document.getElementById('captcha_code')?.focus();
+    });
+
     document.querySelector('[data-reset]')?.addEventListener('click', (e) => {
         if (!window.confirm('Effacer toute la saisie ?')) e.preventDefault();
     });

@@ -154,3 +154,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--primary); outlin
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 @media print { .site-header, .site-footer, .actions { display: none; } }
+
+/* Captcha (CaptchEtat) */
+[data-captcha-img] { display: block; max-width: 100%; height: auto; margin: 0 0 .8rem; border: 1px solid #ccc; background: #fff; }
+[data-captcha-reload] { display: block; margin: 0 0 1.2rem; padding: 0; }
+#captcha_code { max-width: 22rem; }
