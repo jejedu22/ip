@@ -17,6 +17,7 @@ class TransmissionMailer
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly SettingsManager $settings,
+        private readonly TransmissionPdf $pdf,
         #[Autowire('%env(MAIL_FROM)%')]
         private readonly string $from,
     ) {
@@ -42,6 +43,9 @@ class TransmissionMailer
             ->htmlTemplate('email/transmission.html.twig')
             ->textTemplate('email/transmission.txt.twig')
             ->context(['d' => $data]);
+
+        // Fiche complète au format du formulaire papier, générée en mémoire.
+        $email->attach($this->pdf->render($data), 'fiche-transmission-ip-'.(new \DateTimeImmutable())->format('Ymd-His').'.pdf', 'application/pdf');
 
         foreach ($attachments as $file) {
             $email->attachFromPath($file->getPathname(), $this->safeFilename($file), $file->getMimeType());

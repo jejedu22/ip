@@ -72,6 +72,13 @@ class AppTest extends WebTestCase
         $this->assertEmailHtmlBodyContains($mail, 'Faits très confidentiels XYZ.');
         $this->assertEmailHtmlBodyContains($mail, 'Enfantnom');
         $this->assertEmailTextBodyContains($mail, 'Enfantnom');
+
+        // La fiche est jointe au format PDF (structure du formulaire papier).
+        $this->assertEmailAttachmentCount($mail, 1);
+        $pdf = $mail->getAttachments()[0];
+        $this->assertSame('application/pdf', $pdf->getMediaType().'/'.$pdf->getMediaSubtype());
+        $this->assertMatchesRegularExpression('/^fiche-transmission-ip-\d{8}-\d{6}\.pdf$/', $pdf->getPreparedHeaders()->getHeaderParameter('Content-Disposition', 'filename'));
+        $this->assertStringStartsWith('%PDF-', $pdf->getBody());
         $this->assertStringNotContainsString('Enfantnom', (string) $mail->getSubject());
 
         // Seuls l'expéditeur et la date sont conservés.

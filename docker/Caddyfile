@@ -1,0 +1,20 @@
+{
+	# Le TLS est terminé par Traefik : ici, HTTP simple sur le réseau interne.
+	auto_https off
+	admin off
+	frankenphp
+}
+
+{$SERVER_NAME::8080} {
+	root * /app/public
+	encode zstd gzip
+
+	# Pièces jointes : 5 fichiers de 5 Mo + champs du formulaire
+	request_body {
+		max_size 30MB
+	}
+
+	header -Server
+
+	php_server
+}

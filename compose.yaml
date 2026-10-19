@@ -1,0 +1,48 @@
+# Production derrière un Traefik existant.
+# Démarrage : docker compose --env-file .env.docker up -d --build
+#
+# Prérequis : un réseau Docker externe partagé avec Traefik (par défaut « traefik »),
+# des entrypoints « web » / « websecure » et un certresolver (par défaut « letsencrypt »).
+services:
+  app:
+    build: .
+    image: crip-ip:latest
+    restart: unless-stopped
+    environment:
+      APP_SECRET: ${APP_SECRET:?définir APP_SECRET dans .env.docker}
+      MAILER_DSN: ${MAILER_DSN:?définir MAILER_DSN dans .env.docker}
+      MAIL_FROM: ${MAIL_FROM:?définir MAIL_FROM dans .env.docker}
+      DEFAULT_RECIPIENT: ${DEFAULT_RECIPIENT:?définir DEFAULT_RECIPIENT dans .env.docker}
+      DATABASE_URL: sqlite:////var/lib/crip/app.db
+      # Traefik arrive depuis le réseau Docker (plages privées)
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-private_ranges}
+    volumes:
+      - crip-data:/var/lib/crip
+    networks:
+      - traefik
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
+      # HTTPS
+      - traefik.http.routers.crip.rule=Host(`${APP_HOST:?définir APP_HOST dans .env.docker}`)
+      - traefik.http.routers.crip.entrypoints=websecure
+      - traefik.http.routers.crip.tls=true
+      - traefik.http.routers.crip.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}
+      - traefik.http.services.crip.loadbalancer.server.port=8080
+      # Redirection HTTP -> HTTPS
+      - traefik.http.routers.crip-http.rule=Host(`${APP_HOST}`)
+      - traefik.http.routers.crip-http.entrypoints=web
+      - traefik.http.routers.crip-http.middlewares=crip-https
+      - traefik.http.middlewares.crip-https.redirectscheme.scheme=https
+
+volumes:
+  crip-data:
+
+networks:
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik}

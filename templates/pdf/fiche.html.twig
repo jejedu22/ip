@@ -1,0 +1,161 @@
+{% macro box(on) %}<span class="cb">{{ on ? '☒' : '☐' }}</span>{% endmacro %}
+{% macro val(v) -%}
+    {%- if v is iterable -%}{{ v|join(', ') }}
+    {%- elseif v.timestamp is defined -%}{{ v|date('d/m/Y') }}
+    {%- else -%}{{ v }}{%- endif -%}
+{%- endmacro %}
+{% macro fld(label, v) %}<span class="lbl">{{ label }} :</span> <span class="v">{{ _self.val(v)|nl2br }}</span>{% endmacro %}
+{% import _self as m %}
+{% set qualites = constant('App\\Form\\TransmissionType::QUALITES')|keys %}
+{% set residences = constant('App\\Form\\TransmissionType::RESIDENCES')|keys %}
+{% set inf = d.informateur %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<style>
+    @page { margin: 28px 40px 40px 40px; }
+    body { font-family: 'DejaVu Sans', sans-serif; font-size: 8.5px; color: #000; line-height: 1.35; }
+    .cb { font-size: 11px; }
+    h1 { text-align: center; font-size: 14px; margin: 0; line-height: 1.3; }
+    h2 { font-size: 9px; color: #1f5fa8; margin: 14px 0 6px; font-variant: small-caps; text-decoration: underline; }
+    h2 span.sub { color: #000; text-decoration: none; font-weight: normal; }
+    .lbl { color: #222; }
+    .v { font-weight: bold; }
+    .row { margin: 0 0 5px 12px; }
+    table { border-collapse: collapse; width: 100%; }
+    table.grid td, table.grid th { border: 1px solid #999; padding: 3px 4px; vertical-align: top; }
+    table.grid th { font-size: 8px; text-align: center; }
+    table.grid td { height: 13px; }
+    .nb { border: 1px solid #000; padding: 4px 6px; font-size: 7px; text-align: justify; margin: 10px 0 0 12px; }
+    .free { margin: 0 12px; white-space: normal; }
+    .pb { page-break-before: always; }
+    .cols td { vertical-align: top; padding: 0; }
+</style>
+</head>
+<body>
+
+<table>
+    <tr>
+        <td style="width:30%; vertical-align:top;">{% if logo %}<img src="{{ logo }}" style="width:120px;">{% endif %}</td>
+        <td style="width:70%; text-align:center;"><h1>FICHE DE TRANSMISSION<br>D'UNE INFORMATION<br>PRÉOCCUPANTE<br>À L'USAGE DES PROFESSIONNELS</h1></td>
+    </tr>
+    <tr>
+        <td style="vertical-align:top; font-size:9px; line-height:1.6;">Direction Enfance et Famille<br>Cellule de Recueil des<br>Informations Préoccupantes 22<br>Tél. : 02 96 77 32 36</td>
+        <td style="vertical-align:top; padding-top:8px;">
+            <div style="border:1px solid #000; padding:6px 10px; margin-left:20px;">
+                Document à transmettre à :<br>
+                <b>Cellule de Recueil des Informations Préoccupantes 22<br>9 Place du Général de Gaulle<br>CS 42371<br>22023 SAINT-BRIEUC Cedex 01</b><br>
+                <br>@ : <b>crip22@cotesdarmor.fr</b>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<h2>1 - Recueil des premiers éléments</h2>
+<div class="row">{{ m.fld('Date de recueil', d.recueil.date) }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ m.fld('Heure', d.recueil.heure ? d.recueil.heure|date('H:i') : null) }}</div>
+{% set mode = d.recueil.mode ?? null %}
+<table class="row cols" style="width:90%;"><tr>
+    <td style="width:22%;">Mode de recueil :</td>
+    <td style="width:30%;">{{ m.box(mode == 'Accueil') }} Accueil<br>{{ m.box(mode == 'Courrier (joindre copie)') }} Courrier <i>(joindre copie)</i></td>
+    <td>{{ m.box(mode == 'Téléphone') }} Téléphone<br>{{ m.box(mode == 'Courriel (joindre copie)') }} Courriel <i>(joindre copie)</i></td>
+</tr></table>
+
+<h2>2 - Identification du service / partenaire qui transmet les éléments à la CRIP</h2>
+<div class="row">{{ m.fld('NOM', d.service.nom) }} &nbsp;&nbsp;&nbsp; {{ m.fld('Prénom', d.service.prenom) }}</div>
+<div class="row">{{ m.fld('Fonction', d.service.fonction) }}</div>
+<div class="row" style="min-height:40px;">{{ m.fld('Organisme / Service / Adresse', d.service.organisme) }}</div>
+<div class="row">{{ m.fld('Téléphone fixe', d.service.fixe) }} &nbsp;&nbsp;&nbsp; {{ m.fld('Téléphone mobile', d.service.mobile) }}</div>
+<div class="row">{{ m.fld('Courriel', d.service.courriel) }}</div>
+
+<h2>3 - Identification de la personne ayant communiqué les éléments (informateur)</h2>
+<div class="row"><b>{{ m.box(inf.anonyme ?? false) }} Si l’anonymat est sollicité, NE PAS REMPLIR l’identification de la personne</b> <span style="color:#c00;">*</span></div>
+<div class="row">{{ m.fld('NOM', inf.nom ?? null) }} &nbsp;&nbsp;&nbsp; {{ m.fld('Prénom', inf.prenom ?? null) }}</div>
+<div class="row">{{ m.fld('Organisme ou service le cas échéant', inf.organisme ?? null) }}</div>
+<div class="row" style="min-height:40px;">{{ m.fld('Adresse professionnelle', inf.adresse ?? null) }}</div>
+<div class="row">{{ m.fld('Téléphone fixe', inf.fixe ?? null) }} &nbsp;&nbsp;&nbsp; {{ m.fld('Téléphone mobile', inf.mobile ?? null) }}</div>
+<div class="row">{{ m.fld('Courriel', inf.courriel ?? null) }}</div>
+{% set q = inf.qualite ?? null %}
+<table class="cols" style="margin:8px 0 0 28px; width:90%;"><tr>
+    <td style="width:45%;">
+        {% for c in qualites|slice(0, 8) %}{{ m.box(q == c) }} {{ c }}<br>{% endfor %}
+    </td>
+    <td>
+        {% for c in qualites|slice(8) %}{{ m.box(q == c) }} {{ c }}{% if c == 'Autres' %} : <b>{{ inf.qualite_autre ?? '' }}</b>{% endif %}<br>{% endfor %}
+    </td>
+</tr></table>
+
+<h2 class="pb">4 – Identification du ou des mineurs concernés</h2>
+<table class="grid">
+    <tr><th style="width:24%;">NOM</th><th style="width:24%;">Prénom</th><th>Date de naissance</th><th>Lieu de naissance</th><th style="width:9%;">Sexe</th></tr>
+    {% for e in d.mineurs %}
+    <tr><td>{{ e.nom }}</td><td>{{ e.prenom }}</td><td>{{ m.val(e.naissance ?? null) }}</td><td>{{ e.lieu ?? '' }}</td><td>{{ e.sexe ?? '' }}</td></tr>
+    {% endfor %}
+    {% for i in 1..5 %}{% if i > d.mineurs|length %}<tr><td></td><td></td><td></td><td></td><td></td></tr>{% endif %}{% endfor %}
+</table>
+<div class="row" style="margin-top:8px;">{{ m.fld('Adresse', d.adresse_mineurs) }}</div>
+<div class="row">{{ m.fld('Code postal', d.code_postal) }}</div>
+<div class="row">{{ m.fld('Commune', d.commune) }}</div>
+
+<p style="margin:10px 0 4px; font-size:9px;"><u>Autres enfants présents au domicile :</u></p>
+<table class="grid">
+    <tr><th style="width:17%;">NOM</th><th style="width:17%;">Prénom</th><th>Date de naissance</th><th>Lieu de naissance</th><th style="width:7%;">Sexe</th><th style="width:25%;">Adresse <i style="font-weight:normal;">(si différente de celle du ou des mineurs concernés)</i></th></tr>
+    {% for e in d.autres_enfants %}
+    <tr><td>{{ e.nom }}</td><td>{{ e.prenom }}</td><td>{{ m.val(e.naissance ?? null) }}</td><td>{{ e.lieu ?? '' }}</td><td>{{ e.sexe ?? '' }}</td><td>{{ e.adresse ?? '' }}</td></tr>
+    {% endfor %}
+    {% for i in 1..7 %}{% if i > d.autres_enfants|length %}<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>{% endif %}{% endfor %}
+</table>
+
+<h2>5 – Identification des parents ou des responsables légaux du ou des mineurs concernés</h2>
+<table class="grid">
+    <tr><th style="width:9%;"></th><th>NOM<br><span style="font-weight:normal;">(et nom de jeune fille)</span></th><th>Prénom</th><th>Date<br>et lieu de<br>naissance</th><th>Adresse <i style="font-weight:normal;">(si différente de celle du ou des mineurs concernés)</i></th><th>Téléphone</th></tr>
+    {% for key, label in {parent1: 'Parent 1', parent2: 'Parent 2', autre: 'Autre'} %}
+    {% set p = d.parents[key] ?? {} %}
+    <tr style="height:34px;"><td><b>{{ label }}</b></td><td>{{ p.nom ?? '' }}</td><td>{{ p.prenom ?? '' }}</td><td>{{ p.naissance ?? '' }}</td><td>{{ p.adresse ?? '' }}</td><td>{{ p.telephone ?? '' }}</td></tr>
+    {% endfor %}
+</table>
+
+{% set aut = d.autorite ?? [] %}
+<table class="cols" style="margin-top:10px;"><tr>
+    <td style="width:24%; color:#1f5fa8; font-size:9px;">Autorité parentale :</td>
+    <td>
+        {{ m.box('Parent 1' in aut) }} Parent 1<br>
+        {{ m.box('Parent 2' in aut) }} Parent 2<br>
+        {{ m.box('Administration' in aut) }} Administration : {% if 'Administration' in aut %}<b>{{ d.autorite_precision ?? '' }}</b>{% endif %}<br>
+        {{ m.box('Autres' in aut) }} Autres : {% if 'Autres' in aut and 'Administration' not in aut %}<b>{{ d.autorite_precision ?? '' }}</b>{% endif %}
+    </td>
+</tr></table>
+
+{% set res = d.residence ?? null %}
+<table class="cols" style="margin-top:8px;"><tr>
+    <td style="width:24%; color:#1f5fa8; font-size:9px;">Résidence de l’enfant :</td>
+    <td style="width:40%;">{% for c in residences|slice(0, 6) %}{{ m.box(res == c) }} {{ c }}<br>{% endfor %}</td>
+    <td>{% for c in residences|slice(6) %}{{ m.box(res == c) }} {{ c }}{% if c == 'Autres' %} : <b>{{ d.residence_autre ?? '' }}</b>{% endif %}<br>{% endfor %}</td>
+</tr></table>
+
+{% for item in [['Existe-t-il un suivi social ?', d.suivi_social ?? null, d.suivi_social_coordonnees ?? null], ['Existe-t-il un suivi éducatif ?', d.suivi_educatif ?? null, d.suivi_educatif_coordonnees ?? null]] %}
+<table class="cols" style="margin-top:10px;"><tr>
+    <td style="width:24%;">{{ item[0] }}</td>
+    <td>{{ m.box(item[1] == 'Oui') }} Oui &nbsp;&nbsp;&nbsp; {{ m.box(item[1] == 'Non') }} Non &nbsp;&nbsp;&nbsp; {{ m.box(item[1] == 'Ne sait pas') }} Ne sait pas<br>
+        <i>Coordonnées du suivi :</i> <b>{{ item[2]|default('')|nl2br }}</b></td>
+</tr></table>
+{% endfor %}
+
+<h2 class="pb">6 – Les éléments préoccupants : <span class="sub">décrire, dater et contextualiser les faits, les comportements observés et propos tenus…)</span></h2>
+<div class="free" style="min-height:420px;">{{ d.elements|nl2br }}</div>
+
+<h2>7 – Information aux parents</h2>
+<div class="nb" style="margin-left:0;"><b>N. B. :</b> Conformément à l'article L. 226-2-1 du Code de l'Action Sociale et des Familles, les personnes qui mettent en œuvre la politique de protection de l'enfance, ainsi que celles qui lui apportent leur concours (partenaires institutionnels, autorité judiciaire, services publics, établissements éducatifs publics et privés…) ont l'obligation, sauf intérêt contraire de l'enfant, d'informer préalablement, selon des modalités adaptées, le père, la mère, toute autre personne exerçant l'autorité parentale ou le tuteur de la transmission d'une information préoccupante.</div>
+<p style="margin:8px 0 4px;">Les parents ou responsables légaux ont-ils été informés de la transmission des éléments d’inquiétudes, de dangers ou de risques de danger concernant leur(s) enfant(s) à la CRIP ?</p>
+{% set pi = d.parents_informes ?? null %}{% set qui = d.parents_informes_qui ?? [] %}
+<div>{{ m.box(pi == 'Oui') }} <b>Oui</b> : qui : &nbsp; {{ m.box('Parent 1' in qui) }} Parent 1 &nbsp;&nbsp; {{ m.box('Parent 2' in qui) }} Parent 2 &nbsp;&nbsp; {{ m.box('Autre détenteur de l’autorité parentale' in qui) }} Autre détenteur de l’autorité parentale</div>
+<div style="margin-top:4px;">{{ m.box(pi == 'Non') }} <b>Non</b> : préciser pourquoi : <b>{{ (d.parents_informes_non ?? '')|nl2br }}</b></div>
+
+<h2 class="pb">8 – Éléments complémentaires à rapporter sur la situation : <span class="sub">et éléments antérieurs</span></h2>
+<div class="free" style="min-height:420px;">{{ d.complements|default('')|nl2br }}</div>
+
+<div class="nb"><span style="color:#c00;">*</span> <b>N. B. :</b> Les informations recueillies dans cette fiche sont couvertes par le secret professionnel, et ne peuvent être communiquées quelle que soit la qualité d’intéressé ou non du demandeur. La demande d’anonymat concerne les non professionnels. Il peut être levé sur réquisitions judiciaires.</div>
+<div class="nb" style="margin-top:16px;"><b>N. B. :</b> La présente fiche doit permettre à la Cellule de Recueil des Informations Préoccupantes de <b>qualifier ou non</b> les éléments transmis en information préoccupante au sens de l'article R. 226-2-2 du Code de l'Action Sociale et des Familles : "information transmise à la cellule départementale sur la situation d'un mineur, bénéficiant ou non d'un accompagnement, pouvant laisser craindre que sa santé, sa sécurité ou sa moralité sont en danger ou en risque de l'être, ou que les conditions de son éducation ou de son développement physique, affectif, intellectuel et social sont gravement compromises ou en risque de l'être. La finalité de cette transmission est d'évaluer la situation d'un mineur et de déterminer les actions de protection et d'aide, dont ce mineur et sa famille peuvent bénéficier".</div>
+
+</body>
+</html>
